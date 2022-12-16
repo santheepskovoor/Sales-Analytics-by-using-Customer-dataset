@@ -1,0 +1,114 @@
+create database customer;
+use database customer;
+create table if not exists sales_order(order_no varchar(15),
+                                        order_date varchar(15),
+                                        customer_name_index varchar(20) primary key,
+                                        channel  varchar(30),
+                                        warehouse_code varchar(30),
+                                        delivary_region_index int,
+                                        product_description_index  int,
+                                        order_quantity int,
+                                        unit_price decimal(7,2),
+                                        total_revanue decimal(7,2),
+                                        total_unit_cost decimal(6,2)
+                                       );
+                                       
+drop table regions;
+
+create table customers(customer_index int,
+                       customer_names varchar(100));
+                    
+create table regions( index_1 int,
+                      city varchar(100),
+                      country varchar(100),
+                      Full_name varchar(100));
+                       
+create table products ( index int,
+                      product_name varchar(100));
+                      
+select * from sales_order;
+
+
+-----------------------------------------------------------OR--------------------------------------------------------------------------------------------
+
+create database customer;
+use database customer;
+create table if not exists sales_order(order_no varchar(15),
+                                        order_date varchar(15),
+                                        customer_name_index varchar(20) primary key,
+                                        channel  varchar(30),
+                                        warehouse_code varchar(30),
+                                        delivary_region_index int,
+                                        product_description_index  int,
+                                        order_quantity int,
+                                        unit_price decimal(7,2),
+                                        total_revanue decimal(7,2),
+                                        total_unit_cost decimal(6,2)
+                                       );
+                                       
+drop table regions;
+
+create table customers(customer_index int,
+                       customer_names varchar(100));
+                    
+create table regions( index_1 int,
+                      city varchar(100),
+                      country varchar(100),
+                      Full_name varchar(100));
+                       
+create table products ( index int,
+                      product_name varchar(100));
+                      
+select * from sales_order;
+select * from customers;
+select * from regions;
+select * from products;
+
+
+drop view sales_order_view;
+create or replace view sales_order_view AS
+SELECT A.*,B.PRODUCT_NAME,C.CITY,C.Country,C.city ||'-'|| country as city_country FROM sales_order AS A
+LEFT OUTER JOIN products AS B ON 
+A.CUSTOMER_NAME_INDEX =B.INDEX
+LEFT OUTER JOIN regions AS C
+ON A.DELIVARY_REGION_INDEX=C.INDEX_1
+lEFT OUTER JOIN CUSTOMERS AS D
+ON A.CUSTOMER_NAME_INDEX =D.CUSTOMER_INDEX;
+
+
+
+select * from sales_order_view;
+
+
+select * from sales_order_view where order_no is NULL;
+
+
+------NOW_WE_CAN_DO_EDA (EXPLORATORY_DATA_ANALYSIS) -------- ;
+
+select distinct (channel) from sales_order_view;
+
+select * from sales_order_view;
+select channel, count(ORDER_QUANTITY)from sales_order_view group by channel;
+
+select city ||'-'|| country as city_country from sales_order_view;
+
+-------------
+
+----We need to change the data type of date in table level, for that we need to change to table from view.:
+
+create or replace table sales_order_view AS
+SELECT A.*,B.PRODUCT_NAME,C.CITY,C.Country,C.city ||'-'|| country as city_country,
+    Case when unit_price>0 and unit_price<1000 then '0-1000'
+         when unit_price>1001 and unit_price<2000 then '11001$-2000$'
+         when unit_price>2001 and unit_price<3000 then '2001$-3000$'
+         when unit_price>3001 and unit_price<4000 then '3001$-4000$'
+         when unit_price>4001 and unit_price<5000 then '4001$-5000$'
+         when unit_price>5000 then 'Above 5000$'
+     end as price_range_in_USD
+from sales_order as A
+LEFT OUTER JOIN products AS B ON 
+A.CUSTOMER_NAME_INDEX =B.INDEX
+LEFT OUTER JOIN regions AS C
+ON A.DELIVARY_REGION_INDEX=C.INDEX_1
+lEFT OUTER JOIN CUSTOMERS AS D
+ON A.CUSTOMER_NAME_INDEX =D.CUSTOMER_INDEX;
